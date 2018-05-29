@@ -1,0 +1,190 @@
+---
+title: "Packages"
+author: "Ashley Miller & Lea Frank"
+date: "5/16/2018"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+list.of.packages <- c("devtools", "tidyverse", "roxygen2")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])] 
+if (length(new.packages)) install.packages(new.packages, repos = "http://cran.us.r-project.org")
+lapply(list.of.packages, library, character.only = TRUE)
+```
+
+## Packages are for everyone!
+Don't need to have the intent to publish a package to create one. Creating packages can be for personal use and can help make your work more efficient. Today we will review the basic components of a package, how to create a package, and how to upload that package to a Github repository. There's much more advanced things you can do with packages (e.g. publishing to CRAN, installing dependencies), but we will not be covering that content 
+
+
+## Creating a Package
+What will you need?
++ devtools
++ roxygen2
+
+```{r create_package_dir}
+#setwd(week9) 
+#devtools::create("lurr")
+
+
+```
+
+## Package contents
+
+As you can see in your Files, this created a new directory with the given name (e.g. "lurr"). The contents within this new direction are the pieces needed to build a package. We'll go through each one...
+
++ .Rproj 
++ R directory 
++ DESCRIPTION 
++ NAMESPACE 
++ man directory
+
+
+### Projects!
+Projects are a great way to organize your work flow (not just for packages). Projects are separate, saved environments that you can set up preferences specific to your work flow. IDK
+
+Saved within a directory, but when you open a package you automatically set your working directory to that directory. LOL IDK
+
+Creates a new project in which you can build your package. For those of you who aren't familiar, projects are a great way to organize and customize different projects that you are working on. Projects are independent of one another, so each can have different preferences, packages, package versions, etc. 
+
+### R directory
+
+Writing functions --> example of function
+
+```{r}
+corr_cv <- function(x, y) {
+  corval <- vector()
+  for (i in 1:length(x)) {
+    corval[i] <- cor(x[-i], y[-i], use = "pairwise.complete.obs")
+  }
+  mean_corr <- mean(corval)
+  mean_corr
+}
+```
+
+Organizing / Formatting functions:
+
+Don't put all functions into one file and don't put all funtions into separate files. 
+Names of functions should be clear and meaningulful, with .R at the end.
+Avoid capitalization so code can be shared across OS
+
+Hadley's rule of thumb: "If I can't remember the name of the file where a function lives, I need to either separate the functions into more files or give the file a better name."
+
+e.g. fit_models.R (good) vs. foo.r (bad)
+
+Keyboard shortcut to find functions... 
+
+variables --> nouns
+functions --> verbs
+
+### Description
+The **DESCRIPTION** file contains meta-data regarding the package (e.g. title, authors, etc.). This file is for you to edit and fill in relevant information. For a personal package, much of this information will not be used and is for your own reference. One of the things you want to make sure you fill out are the Dependencies (i.e. packages your functions rely on, the version of R being used, etc.). 
+
+**Default Documentation** 
+
+```
+Package: [PACKAGE NAME]
+Title: What the Package Does (one line, title case)
+Version: 0.0.0.9000
+Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
+Description: What the package does (one paragraph).
+Depends: R (>= 3.5.0)
+License: Who can use your package?
+Encoding: UTF-8
+LazyData: true
+Imports:
+  dplyr (can include required versions here), 
+  ggplot2
+Suggests:
+  ggthemes
+```
+
+**Important Notes**
+
++ **Imports:** is where you list packages that are required to run certain functions in your code. These packages are automatically installed with your package. However, these *dependecies* are loaded with your package. We won't be covering how to load dependencies in this tutorial. Instead, Hadley suggests use **pkg::fun()** to call functions that rely on installed dependencies. Though slightly slower, this helps you keep track of your code down the road. If there are functions that you call repeatedly, you can load packages (or specific functions) in the NAMESPACE. 
+
++ **Suggests** is where you list packages that are suggested but not required to run functions. These are not automatically installed with your package. 
+
+
+### Namespace
+The actual NAMESPACE file will never be edited manually. Instead, we can use the `roxygen2` package to automatically create documentation for each function. To do so, we must include comments with specific information directly above each function (see below). The `roxygen2` package, along with the `devtools::document` function, will automatically process those comments to create documentation for each function. The documentation gets stored in the `man/` directory. 
+\n
+**Components of roxygen2 comments**
++ `@param` is where you define the formal arguments for your functino. You must first state the argument name and then a description of it. 
++ `@return` describes what the function returns
++ `@export` is required to export the function 
++ `@examples` is where you can provide example uses of your function
++ `@import` is where you can load dependencies that are required for your function
+  + `@import
+
+Example of comments associated with each function in the R script: 
+\n
+```r
+#' Cross-Validated Correlation 
+#'
+#' This function allows you to run a correlation using leave-one-out cross-validation.
+#' @param x A single vector.
+#' @param y A single vector.
+#' @keywords cats
+#' @export
+#' @examples
+#' corr_cv(x, y)
+
+corr_cv <- function(x, y) {
+  corval <- vector()
+  for (i in 1:length(x)) {
+    corval[i] <- cor(x[-i], y[-i], use = "pairwise.complete.obs")
+  }
+  mean_corr <- mean(corval)
+  return(mean_corr)
+}
+```
+\n
+Once you have saved the R script, you can run `devtools::document()` in the command line. This will save a new `.Rd` file in the `man/` directory. The resulting documenation looks something like this:
+\n
+```r
+% Generated by roxygen2: do not edit by hand
+% Please edit documentation in R/stat_functions.R
+\name{corr_cv}
+\alias{corr_cv}
+\title{Cross-Validated Correlation}
+\usage{
+corr_cv(x, y)
+}
+\arguments{
+\item{x}{A single vector.}
+
+\item{y}{A single vector.}
+}
+\description{
+This function allows you to run a correlation using leave-one-out cross-validation.
+}
+\examples{
+cat_function()
+}
+\keyword{cats}
+```
+\n
+Once you install your package, you can see the result using `?[function]`
+
+
+## Additional components that will not be covered today
+
++ **.gitignore**: this is where you define files to ignore when you commit your package to a Git repository
++ 
+
+
+
+
+
+## Resources
+[link](http://r-pkgs.had.co.nz/) --> Hadley's book on R packages
+[link](https://cran.r-project.org/doc/manuals/r-release/R-exts.html)
+[link](https://www.rstudio.com/wp-content/uploads/2015/03/devtools-cheatsheet.pdf) 
+
+
+
