@@ -2,5 +2,3 @@
 
 export(corr_cv)
 export(se)
-import(dplyr)
-import(ggplot2)

@@ -11,13 +11,11 @@ corr_cv(x, y)
 
 \item{y}{A single vector.}
 }
-\value{
-A single measure of an average correlation coefficient.
-}
 \description{
 This function allows you to run a correlation using leave-one-out cross-validation.
 }
 \examples{
-corr_cv(x, y)
+corr_cv(got$`Book Intro Chapter`, got$`Death Chapter`)
 }
-\keyword{cats}
+\keyword{correlation}
+\keyword{cross-validation,}
